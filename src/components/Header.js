@@ -1,11 +1,15 @@
 import React from 'react';
-import { Heading } from '@chakra-ui/react';
+import { Heading, Box } from '@chakra-ui/react';
 
 const Header = () => {
   return (
-    <Heading as="h1" size="xl" textAlign="center" mt="4">
-      Pokedex
-    </Heading>
+    <Box bgColor="#2d3748" p={4} mb={4}>
+      <Box maxW="1200px" mx="auto">
+        <Heading as="h1" size="xl" textAlign="center" color="white">
+          🚀 Desafio Pokedex - Psychometrika 🚀
+        </Heading>
+      </Box>
+    </Box>
   );
 };
 

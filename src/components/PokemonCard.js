@@ -33,21 +33,23 @@ const PokemonCard = ({ number, name, pokeDetails, image }) => {
 
   return (
     // Chakra UI
-    <Card maxW='sm'>
-      <CardBody>
+    <Card maxW='200px' minW='200px' borderWidth='1px' borderRadius='lg' bg = '#d9d9d9'>
+      <CardBody p='0'>
         <Flex
           flexDir='column'
           bg={typeColors[getTypeClass(pokeDetails && pokeDetails.types && pokeDetails.types[0])]}
           color='#FFF'
-          minW='100%'
+          alignItems='center'
+          justifyContent='center'
+          h='150px'
         >
-          <Text>N°{number}</Text>
-          <Image src={image} alt='Pokemon' borderRadius='lg' />
+          <Text fontSize='sm'>N°{number}</Text>
+          <Image src={image} alt='Pokemon' borderRadius='lg' maxH='100px' />
         </Flex>
-        <Stack mt='6' spacing='3'>
-          <Heading size='md'>{capitalizeFirstLetter(name)}</Heading>
+        <Stack mt='2' spacing='1' >
+          <Heading fontSize='sm' >{capitalizeFirstLetter(name)}</Heading>
         </Stack>
-        <Flex minW='100%' color='#FFF'>
+        <Flex minW='100%' justifyContent='center'>
           {pokeDetails &&
             pokeDetails.types &&
             pokeDetails.types.map((type, index) => (

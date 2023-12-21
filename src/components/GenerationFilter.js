@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Select } from '@chakra-ui/react';
+import { Box, Select, Text } from '@chakra-ui/react';
 import axios from 'axios';
 
 const GenerationFilter = ({ onSelectGeneration }) => {
@@ -28,8 +28,11 @@ const GenerationFilter = ({ onSelectGeneration }) => {
   };
 
   return (
-    <Box mb="4">
-      <Select placeholder="Selecione uma geração" onChange={handleSelectChange}>
+    <Box mb="4" p="4" bgColor="#f7fafc" rounded="md" boxShadow="md">
+      <Text fontSize="xl" fontWeight="bold" mb={2} color="#2d3748">
+        Geração
+      </Text>
+      <Select placeholder="Selecione uma geração" onChange={handleSelectChange} color="#4a5568">
         {generations.map((generation) => (
           <option key={generation.value} value={generation.value}>
             {generation.label}
