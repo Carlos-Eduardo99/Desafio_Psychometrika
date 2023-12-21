@@ -1,4 +1,3 @@
-// src/components/PokemonCard.js
 import React from 'react';
 import { Card, CardBody, Flex, Text, Image, Stack, Heading } from '@chakra-ui/react';
 

@@ -1,17 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import Pokedex from './components/Pokedex';
+import Header from './components/Header';
+import GenerationFilter from './components/GenerationFilter';
 
-import { ChakraProvider } from '@chakra-ui/react'
-
+import { ChakraProvider } from '@chakra-ui/react';
 
 function App() {
-  // 2. Wrap ChakraProvider at the root of your app
+  const [selectedGeneration, setSelectedGeneration] = useState(null);
+
   return (
     <ChakraProvider>
-       <Pokedex />
+      <div className="content">
+        <Header />
+        <GenerationFilter onSelectGeneration={(generation) => setSelectedGeneration(generation)} />
+        <Pokedex selectedGeneration={selectedGeneration} />
+      </div>
     </ChakraProvider>
-  )
+  );
 }
 
 export default App;
