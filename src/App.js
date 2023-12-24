@@ -11,6 +11,7 @@ import backgroundImage from './image/background.jpg';
 function App() {
   const [selectedGeneration, setSelectedGeneration] = useState(null);
   const [selectedTypes, setSelectedTypes] = useState([]);
+  const [selectedAbility, setSelectedAbility] = useState(null);
   const [searchTrigger, setSearchTrigger] = useState(false);
 
   const handleSearch = () => {
@@ -35,13 +36,23 @@ function App() {
           <Filter
             onSelectGeneration={(generation) => setSelectedGeneration(generation)}
             onSelectType={(types) => setSelectedTypes(types)}
+            onSelectAbility={(ability) => setSelectedAbility(ability)}
             onSearch={handleSearch}
           />
-         <Routes>
-          <Route path="/" element={<Homepage width="100%" />} />
-          <Route path="/pokedex" element={<Pokedex selectedGeneration={selectedGeneration} selectedTypes={selectedTypes} searchTrigger={searchTrigger} width="100%" />} />
-          <Route path="/*" element={<Navigate to="/" />} />
-        </Routes>
+          <Routes>
+            <Route path="/" element={<Homepage width="100%" />} />
+            <Route
+              path="/pokedex"
+              element={<Pokedex
+                          selectedGeneration={selectedGeneration}
+                          selectedTypes={selectedTypes}
+                          selectedAbility={selectedAbility}
+                          searchTrigger={searchTrigger}
+                          width="100%"
+                        />}
+            />
+            <Route path="/*" element={<Navigate to="/" />} />
+          </Routes>
         </Box>
       </Router>
     </ChakraProvider>

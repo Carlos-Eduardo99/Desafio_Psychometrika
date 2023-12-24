@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Flex, Box, Text, Button, Spinner } from '@chakra-ui/react';
 import TypeFilter from './TypeFilter';
 import GenerationFilter from './GenerationFilter';
+import AbilityFilter from './AbilityFilter';
 
-const Filter = ({ onSelectGeneration, onSelectType, onSearch, loading }) => {
+const Filter = ({ onSelectGeneration, onSelectType, onSelectAbility, onSearch, loading }) => {
   const navigate = useNavigate();
 
   const handleTypeSelect = (types) => {
@@ -12,8 +13,8 @@ const Filter = ({ onSelectGeneration, onSelectType, onSearch, loading }) => {
   };
 
   const handleSearch = () => {
-    onSearch(prevState => !prevState);
-    
+    onSearch((prev) => !prev);
+
     navigate('/pokedex');
   };
 
@@ -38,6 +39,7 @@ const Filter = ({ onSelectGeneration, onSelectType, onSearch, loading }) => {
         </Box>
         <Box ml={{ base: '0', md: '4' }}>
           <GenerationFilter onSelectGeneration={onSelectGeneration} />
+          <AbilityFilter onSelectAbility={onSelectAbility} /> {/* Adiciona o filtro de habilidade */}
         </Box>
         <Button onClick={handleSearch} colorScheme="teal" mt={4} disabled={loading}>
           {loading ? <Spinner size="sm" color="white" /> : 'Aplicar Filtro'}

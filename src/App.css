@@ -76,3 +76,10 @@
 .pagination button:hover {
   background-color: #4754a8;
 }
+
+.filter-container {
+  max-width: 100px; 
+  margin: 0 auto;
+  padding: 20px; 
+  
+}

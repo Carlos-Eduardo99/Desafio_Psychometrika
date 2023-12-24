@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardBody, Flex, Text, Image, Stack, Heading } from '@chakra-ui/react';
+import { Card, CardBody, Flex, Text, Image, Stack, Heading, Wrap, WrapItem } from '@chakra-ui/react';
 
 const capitalizeFirstLetter = (string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -32,8 +32,7 @@ const PokemonCard = ({ number, name, pokeDetails, image }) => {
   };
 
   return (
-    // Chakra UI
-    <Card maxW='200px' minW='200px' borderWidth='1px' borderRadius='lg' bg = '#d9d9d9'>
+    <Card maxW='200px' minW='200px' borderWidth='1px' borderRadius='lg' bg='#d9d9d9'>
       <CardBody p='0'>
         <Flex
           flexDir='column'
@@ -46,10 +45,10 @@ const PokemonCard = ({ number, name, pokeDetails, image }) => {
           <Text fontSize='sm'>N°{number}</Text>
           <Image src={image} alt='Pokemon' borderRadius='lg' maxH='100px' />
         </Flex>
-        <Stack mt='2' spacing='1' >
-          <Heading fontSize='sm' >{capitalizeFirstLetter(name)}</Heading>
+        <Stack mt='2' spacing='1'>
+          <Heading fontSize='sm'>{capitalizeFirstLetter(name)}</Heading>
         </Stack>
-        <Flex minW='100%' justifyContent='center'>
+        <Flex minW='100%' justifyContent='center' mt='2'>
           {pokeDetails &&
             pokeDetails.types &&
             pokeDetails.types.map((type, index) => (
@@ -67,6 +66,27 @@ const PokemonCard = ({ number, name, pokeDetails, image }) => {
               </Flex>
             ))}
         </Flex>
+        <Text fontSize='sm' mt='2'>
+          Habilidades{' '}
+          <Wrap spacing='1'>
+            {pokeDetails &&
+              pokeDetails.abilities &&
+              pokeDetails.abilities.map((ability, index) => (
+                <WrapItem key={index}>
+                  <Flex
+                    bg='#f8f8f8'
+                    color='#333'
+                    padding='.25rem .5rem'
+                    margin='.25rem 0'
+                    borderRadius='lg'
+                    textAlign='center'
+                  >
+                    {ability.ability.name}
+                  </Flex>
+                </WrapItem>
+              ))}
+          </Wrap>
+        </Text>
       </CardBody>
     </Card>
   );
