@@ -12,7 +12,7 @@ const AbilityFilter = ({ onSelectAbility }) => {
         let allAbilities = [];
         let nextUrl = 'https://pokeapi.co/api/v2/ability/';
 
-        // Continue fazendo solicitações até que não haja mais resultados
+        // Continua fazendo solicitações até que não haja mais resultados
         while (nextUrl) {
           const response = await axios.get(nextUrl);
           const abilitiesData = response.data.results.map((ability) => ({

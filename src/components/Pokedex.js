@@ -10,10 +10,12 @@ const POKEMON_SPECIES_API_BASE_URL = 'https://pokeapi.co/api/v2/pokemon-species'
 const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTrigger }) => {
   const [pokemonList, setPokemonList] = useState([]);
   const navigate = useNavigate();
+  const [loadingData, setLoadingData] = useState(false);
 
   useEffect(() => {
     const applyFilter = async () => {
       try {
+        setLoadingData(true);
         let filteredPokemonList = [];
 
         // Filtro por geração, tipo e habilidade
@@ -208,6 +210,8 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTri
         setPokemonList(filteredPokemonList.sort((a, b) => a.id - b.id)); // ordena em ordem crescente
       } catch (error) {
         console.error('Error fetching Pokemon data:', error);
+      }finally {
+        setLoadingData(false);
       }
     };
 
@@ -224,7 +228,11 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTri
 
   return (
     <Box className="content" p="1rem" bgColor="#fff" width="100vw" height="100vh" display="flex" flexDirection="column" alignItems="center">
-      {pokemonList.length > 0 ? (
+      {loadingData ? (
+        <Text mt={4} fontSize="xl" fontWeight="bold">
+          Carregando dados...
+        </Text>
+      ) : pokemonList.length > 0 ? (
         <Grid templateColumns={`repeat(4, 1fr)`} gap={4}>
           {pokemonList.map((pokemon) => (
             <PokemonCard
