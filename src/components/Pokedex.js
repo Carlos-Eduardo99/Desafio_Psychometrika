@@ -1,131 +1,133 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Grid, Button } from '@chakra-ui/react';
+import { Box, Grid, Text } from '@chakra-ui/react';
 import PokemonCard from './PokemonCard';
+import { useNavigate } from 'react-router-dom';
 
 const POKEMON_API_BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
 const POKEMON_SPECIES_API_BASE_URL = 'https://pokeapi.co/api/v2/pokemon-species';
-const POKEMON_PER_PAGE = 12;
 
-const Pokedex = ({ selectedGeneration, selectedTypes }) => {
+const Pokedex = ({ selectedGeneration, selectedTypes, searchTrigger }) => {
   const [pokemonList, setPokemonList] = useState([]);
-  const [nextPage, setNextPage] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [pageCount, setPageCount] = useState(1);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchPokemonData = async () => {
-      setLoading(true);
-
+    const applyFilter = async () => {
       try {
-        let apiUrl;
+        let filteredPokemonList = [];
 
-        if (selectedGeneration && selectedTypes.length === 0) {
-          
-          const response = await axios.get(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
-          const pokemonUrls = response.data.pokemon_species.map((pokemon) => `${POKEMON_SPECIES_API_BASE_URL}/${pokemon.name}`);
-          const pokemonDetails = await Promise.all(
-            pokemonUrls.map(async (url) => {
-              const pokemonSpeciesResponse = await axios.get(url);
+        // Filtro por geração e tipo
+        if (selectedGeneration && selectedTypes.length > 0) {
+          const generationResponse = await axios.get(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
+          const generationPokemonNames = generationResponse.data.pokemon_species.map(pokemon => pokemon.name);
+
+          const typePromises = selectedTypes.map(async (type) => {
+            try {
+              const response = await axios.get(`https://pokeapi.co/api/v2/type/${type}`);
+              return response.data.pokemon.map((pokemon) => pokemon.pokemon.name);
+            } catch (error) {
+              console.error('Error fetching Pokemon data:', error);
+            }
+          });
+
+          const typePokemonNames = await Promise.all(typePromises);
+          const commonPokemonNames = typePokemonNames.reduce((a, b) => a.filter(c => b.includes(c)));
+
+          const commonPokemonInGeneration = commonPokemonNames.filter(name => generationPokemonNames.includes(name));
+
+          const pokemonPromises = commonPokemonInGeneration.map(async (name) => {
+            try {
+              const pokemonSpeciesResponse = await axios.get(`${POKEMON_SPECIES_API_BASE_URL}/${name}`);
               const pokemonResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemonSpeciesResponse.data.id}`);
               return pokemonResponse.data;
-            })
-          );
+            } catch (error) {
+              // Ignorar Pokémon não encontrado
+              return null;
+            }
+          });
 
-          setNextPage(null);
-          setPokemonList([...pokemonDetails].sort((a, b) => a.id - b.id));
-        } else if (selectedTypes.length > 0) {
-        
-          const typeApiUrls = selectedTypes.map((type) => `https://pokeapi.co/api/v2/type/${type}`);
-          const typeResponses = await Promise.all(typeApiUrls.map((url) => axios.get(url)));
-          const pokemonUrls = typeResponses.flatMap((response) => response.data.pokemon.map((pokemon) => pokemon.pokemon.url));
+          filteredPokemonList = await Promise.all(pokemonPromises);
+          filteredPokemonList = filteredPokemonList.filter(Boolean); // Remover valores nulos
+        } else if (selectedGeneration) {
+          // Filtro por geração
+          const response = await axios.get(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
+          const pokemonNamesByGeneration = response.data.pokemon_species.map(pokemon => pokemon.name);
 
-          if (selectedGeneration) {
-            
-            const generationResponse = await axios.get(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
-            const generationPokemonUrls = generationResponse.data.pokemon_species.map((pokemon) => `${POKEMON_SPECIES_API_BASE_URL}/${pokemon.name}`);
-            const filteredPokemonUrls = pokemonUrls.filter((url) => generationPokemonUrls.includes(url));
-            const filteredPokemonDetails = await Promise.all(
-              filteredPokemonUrls.map(async (url) => {
-                const pokemonResponse = await axios.get(url);
-                return pokemonResponse.data;
-              })
-            );
-
-            const finalFilteredPokemonDetails = filteredPokemonDetails.filter((pokemon) => {
-              const pokemonTypes = pokemon.types.map((type) => type.type.name);
-              return selectedTypes.every((type) => pokemonTypes.includes(type));
-            });
-
-            setNextPage(null);
-            setPokemonList([...finalFilteredPokemonDetails].sort((a, b) => a.id - b.id));
-          } else {
-            
-            const pokemonDetails = await Promise.all(
-              pokemonUrls.map(async (url) => {
-                const pokemonResponse = await axios.get(url);
-                return pokemonResponse.data;
-              })
-            );
-
-            const finalFilteredPokemonDetails = pokemonDetails.filter((pokemon) => {
-              const pokemonTypes = pokemon.types.map((type) => type.type.name);
-              return selectedTypes.every((type) => pokemonTypes.includes(type));
-            });
-
-            setNextPage(null);
-            setPokemonList([...finalFilteredPokemonDetails].sort((a, b) => a.id - b.id));
-          }
-        } else {
-          
-          apiUrl = `${POKEMON_API_BASE_URL}?limit=${POKEMON_PER_PAGE}&offset=${(pageCount - 1) * POKEMON_PER_PAGE}`;
-          const response = await axios.get(apiUrl);
-          setNextPage(response.data.next);
-
-          const pokemonDetails = await Promise.all(
-            response.data.results.map(async (pokemon) => {
-              const pokemonResponse = await axios.get(pokemon.url);
+          const pokemonPromises = pokemonNamesByGeneration.map(async (name) => {
+            try {
+              const pokemonSpeciesResponse = await axios.get(`${POKEMON_SPECIES_API_BASE_URL}/${name}`);
+              const pokemonResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemonSpeciesResponse.data.id}`);
               return pokemonResponse.data;
-            })
-          );
+            } catch (error) {
+              return null;
+            }
+          });
 
-          setPokemonList((prevList) =>
-            pageCount === 1
-              ? [...pokemonDetails].sort((a, b) => a.id - b.id)
-              : [...new Set([...prevList, ...pokemonDetails])].sort((a, b) => a.id - b.id)
-          );
+          filteredPokemonList = await Promise.all(pokemonPromises);
+          filteredPokemonList = filteredPokemonList.filter(Boolean);
+        } else if (selectedTypes.length > 0) {
+          // Filtro por tipo
+          const typePromises = selectedTypes.map(async (type) => {
+            try {
+              const response = await axios.get(`https://pokeapi.co/api/v2/type/${type}`);
+              return response.data.pokemon.map((pokemon) => pokemon.pokemon.name);
+            } catch (error) {
+              console.error('Error fetching Pokemon data:', error);
+            }
+          });
+
+          const pokemonNamesByType = await Promise.all(typePromises);
+          const commonPokemonNames = pokemonNamesByType.reduce((a, b) => a.filter(c => b.includes(c)));
+
+          const pokemonPromises = commonPokemonNames.map(async (name) => {
+            try {
+              const pokemonSpeciesResponse = await axios.get(`${POKEMON_SPECIES_API_BASE_URL}/${name}`);
+              const pokemonResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemonSpeciesResponse.data.id}`);
+              return pokemonResponse.data;
+            } catch (error) {
+              return null;
+            }
+          });
+
+          filteredPokemonList = await Promise.all(pokemonPromises);
+          filteredPokemonList = filteredPokemonList.filter(Boolean);
         }
+
+        setPokemonList(filteredPokemonList.sort((a, b) => a.id - b.id)); // ordena em ordem crescente
       } catch (error) {
         console.error('Error fetching Pokemon data:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchPokemonData();
-  }, [pageCount, selectedGeneration, selectedTypes]);
+    applyFilter();
+    // eslint-disable-next-line
+  }, [searchTrigger]);
 
-  const handleLoadMore = () => {
-    setPageCount((prevPageCount) => prevPageCount + 1);
-  };
+  useEffect(() => {
+    if (selectedTypes.length === 0 && !selectedGeneration) {
+      // Se nenhum filtro estiver ativado, retorne para a home
+      navigate('/');
+    }
+  }, [selectedTypes, selectedGeneration, navigate]);
 
   return (
     <Box className="content" p="1rem" bgColor="#fff" width="100vw" height="100vh" display="flex" flexDirection="column" alignItems="center">
-      <Grid templateColumns={`repeat(4, 1fr)`} gap={4}>
-        {pokemonList.map((pokemon) => (
-          <PokemonCard
-            key={pokemon.id}
-            number={pokemon.id}
-            name={pokemon.name}
-            pokeDetails={pokemon}
-            image={pokemon.sprites.front_default}
-          />
-        ))}
-      </Grid>
-      {nextPage && (
-        <Button mt={4} onClick={handleLoadMore} isLoading={loading} loadingText='Carregar mais Pokemons'>
-          Carregar mais Pokemons
-        </Button>
+      {pokemonList.length > 0 ? (
+        <Grid templateColumns={`repeat(4, 1fr)`} gap={4}>
+          {pokemonList.map((pokemon) => (
+            <PokemonCard
+              key={pokemon.id}
+              number={pokemon.id}
+              name={pokemon.name}
+              pokeDetails={pokemon}
+              image={pokemon.sprites.front_default}
+            />
+          ))}
+        </Grid>
+      ) : (
+        <Text mt={4} fontSize="xl" fontWeight="bold" color="red.500">
+          Nenhum Pokémon corresponde à sua pesquisa!
+        </Text>
       )}
     </Box>
   );

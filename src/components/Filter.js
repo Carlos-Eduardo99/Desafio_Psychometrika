@@ -1,11 +1,20 @@
 import React from 'react';
-import { Flex, Box, Text } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
+import { Flex, Box, Text, Button, Spinner } from '@chakra-ui/react';
 import TypeFilter from './TypeFilter';
 import GenerationFilter from './GenerationFilter';
 
-const Filter = ({ onSelectGeneration, onSelectType }) => {
+const Filter = ({ onSelectGeneration, onSelectType, onSearch, loading }) => {
+  const navigate = useNavigate();
+
   const handleTypeSelect = (types) => {
     onSelectType(types);
+  };
+
+  const handleSearch = () => {
+    onSearch(prevState => !prevState);
+    
+    navigate('/pokedex');
   };
 
   return (
@@ -30,6 +39,9 @@ const Filter = ({ onSelectGeneration, onSelectType }) => {
         <Box ml={{ base: '0', md: '4' }}>
           <GenerationFilter onSelectGeneration={onSelectGeneration} />
         </Box>
+        <Button onClick={handleSearch} colorScheme="teal" mt={4} disabled={loading}>
+          {loading ? <Spinner size="sm" color="white" /> : 'Aplicar Filtro'}
+        </Button>
       </Flex>
     </Box>
   );

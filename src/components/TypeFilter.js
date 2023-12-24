@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, VStack, Text } from '@chakra-ui/react';
 import axios from 'axios';
+import { Box, Grid, VStack, Text } from '@chakra-ui/react';
 
 const typeColors = {
   normal: '#a6a877',
@@ -31,9 +31,7 @@ const TypeFilter = ({ onSelectType }) => {
     const fetchTypes = async () => {
       try {
         const response = await axios.get('https://pokeapi.co/api/v2/type');
-        const typeList = response.data.results
-          .map((type) => type.name)
-          .filter((type) => type !== 'unknown' && type !== 'shadow');
+        const typeList = response.data.results.map((type) => type.name).filter((type) => type !== 'unknown' && type !== 'shadow');
         setTypes(typeList);
       } catch (error) {
         console.error('Error fetching Pokemon types:', error);
@@ -44,27 +42,13 @@ const TypeFilter = ({ onSelectType }) => {
   }, []);
 
   const handleTypeClick = (type) => {
-    const updatedTypes = [...selectedTypes];
-
-    if (updatedTypes.includes(type)) {
-      updatedTypes.splice(updatedTypes.indexOf(type), 1);
-    } else {
-      updatedTypes.push(type);
-    }
+    const updatedTypes = selectedTypes.includes(type)
+      ? selectedTypes.filter((selectedType) => selectedType !== type)
+      : [...selectedTypes, type];
 
     setSelectedTypes(updatedTypes);
     onSelectType(updatedTypes);
   };
-
-  const chunkArray = (array, size) => {
-    const result = [];
-    for (let i = 0; i < array.length; i += size) {
-      result.push(array.slice(i, i + size));
-    }
-    return result;
-  };
-
-  const typesInRows = chunkArray(types, 6);
 
   return (
     <Box mt={4} p={4} bgColor="rgba(255, 255, 255, 0.8)" rounded="md" border="1px solid #ccc" mx="auto" maxW="600px">
@@ -72,26 +56,22 @@ const TypeFilter = ({ onSelectType }) => {
         Tipos de Ataque
       </Text>
       <Grid templateColumns="repeat(3, 1fr)" gap={5}>
-        {typesInRows.map((row, rowIndex) => (
-          <VStack key={rowIndex} align="stretch" spacing={2}>
-            {row.map((type) => (
-              <Box
-                key={type}
-                onClick={() => handleTypeClick(type)}
-                p={4}
-                bgColor={selectedTypes.includes(type) ? typeColors[type] : 'gray.200'}
-                rounded="md"
-                cursor="pointer"
-                _hover={{ bgColor: selectedTypes.includes(type) ? typeColors[type] : 'gray.300' }}
-              >
-                <VStack spacing={1}>
-                  <Text color={selectedTypes.includes(type) ? 'white' : 'gray.600'} fontSize="lg">
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </Text>
-                </VStack>
-              </Box>
-            ))}
-          </VStack>
+        {types.map((type) => (
+          <Box
+            key={type}
+            onClick={() => handleTypeClick(type)}
+            p={4}
+            bgColor={selectedTypes.includes(type) ? typeColors[type] : 'gray.200'}
+            rounded="md"
+            cursor="pointer"
+            _hover={{ bgColor: selectedTypes.includes(type) ? typeColors[type] : 'gray.300' }}
+          >
+            <VStack spacing={1}>
+              <Text color={selectedTypes.includes(type) ? 'white' : 'gray.600'} fontSize="lg">
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Text>
+            </VStack>
+          </Box>
         ))}
       </Grid>
     </Box>

@@ -1,35 +1,49 @@
 import React, { useState } from 'react';
+import { Navigate, BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { ChakraProvider, Box } from '@chakra-ui/react';
 import './App.css';
 import Pokedex from './components/Pokedex';
 import Header from './components/Header';
 import Filter from './components/Filter';
-import { ChakraProvider, Box } from '@chakra-ui/react';
+import Homepage from './components/HomePage';
 import backgroundImage from './image/background.jpg';
 
 function App() {
   const [selectedGeneration, setSelectedGeneration] = useState(null);
   const [selectedTypes, setSelectedTypes] = useState([]);
+  const [searchTrigger, setSearchTrigger] = useState(false);
+
+  const handleSearch = () => {
+    setSearchTrigger((prev) => !prev);
+  };
 
   return (
     <ChakraProvider>
-      <Box
-        backgroundImage={`url(${backgroundImage})`}
-        backgroundSize="cover"
-        backgroundPosition="center"
-        minHeight="100vh"
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        width="100%"
-      >
-        <Header width="100%" />
-        <Filter
-          onSelectGeneration={(generation) => setSelectedGeneration(generation)}
-          onSelectType={(types) => setSelectedTypes(types)}
-        />
-        <Pokedex selectedGeneration={selectedGeneration} selectedTypes={selectedTypes} width="100%" />
-      </Box>
+      <Router>
+        <Box
+          backgroundImage={`url(${backgroundImage})`}
+          backgroundSize="cover"
+          backgroundPosition="center"
+          minHeight="100vh"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          width="100%"
+        >
+          <Header width="100%" />
+          <Filter
+            onSelectGeneration={(generation) => setSelectedGeneration(generation)}
+            onSelectType={(types) => setSelectedTypes(types)}
+            onSearch={handleSearch}
+          />
+         <Routes>
+          <Route path="/" element={<Homepage width="100%" />} />
+          <Route path="/pokedex" element={<Pokedex selectedGeneration={selectedGeneration} selectedTypes={selectedTypes} searchTrigger={searchTrigger} width="100%" />} />
+          <Route path="/*" element={<Navigate to="/" />} />
+        </Routes>
+        </Box>
+      </Router>
     </ChakraProvider>
   );
 }
