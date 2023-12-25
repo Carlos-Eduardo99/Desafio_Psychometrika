@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Flex, Box, Text, Button, Spinner } from '@chakra-ui/react';
 import TypeFilter from './TypeFilter';
 import GenerationFilter from './GenerationFilter';
-import AbilityFilter from './AbilityFilter';
+import MoveFilter from './MoveFilter';
 
-const Filter = ({ onSelectGeneration, onSelectType, onSelectAbility, onSearch, loading }) => {
+const Filter = ({ onSelectGeneration, onSelectType, onSelectMove, onSearch, loading }) => {
   const navigate = useNavigate();
 
   const handleTypeSelect = (types) => {
@@ -39,7 +39,7 @@ const Filter = ({ onSelectGeneration, onSelectType, onSelectAbility, onSearch, l
         </Box>
         <Box ml={{ base: '0', md: '4' }}>
           <GenerationFilter onSelectGeneration={onSelectGeneration} />
-          <AbilityFilter onSelectAbility={onSelectAbility} /> {/* Adiciona o filtro de habilidade */}
+          <MoveFilter onSelectMove={onSelectMove} />
         </Box>
         <Button onClick={handleSearch} colorScheme="teal" mt={4} disabled={loading}>
           {loading ? <Spinner size="sm" color="white" /> : 'Aplicar Filtro'}

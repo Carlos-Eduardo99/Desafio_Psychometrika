@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const POKEMON_API_BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
 const POKEMON_SPECIES_API_BASE_URL = 'https://pokeapi.co/api/v2/pokemon-species';
 
-const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTrigger }) => {
+const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigger }) => {
   const [pokemonList, setPokemonList] = useState([]);
   const navigate = useNavigate();
   const [loadingData, setLoadingData] = useState(false);
@@ -18,8 +18,8 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTri
         setLoadingData(true);
         let filteredPokemonList = [];
 
-        // Filtro por geração, tipo e habilidade
-        if (selectedGeneration && selectedTypes.length > 0 && selectedAbility) {
+        // Filtro por geração, tipo e ataque
+        if (selectedGeneration && selectedTypes.length > 0 && selectedMove) {
           const generationResponse = await axios.get(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
           const generationPokemonNames = generationResponse.data.pokemon_species.map((pokemon) => pokemon.name);
 
@@ -37,10 +37,11 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTri
 
           const commonPokemonInGeneration = commonPokemonNames.filter(name => generationPokemonNames.includes(name));
 
-          const abilityResponse = await axios.get(`https://pokeapi.co/api/v2/ability/${selectedAbility}`);
-          const abilityPokemonNames = abilityResponse.data.pokemon.map((pokemon) => pokemon.pokemon.name);
+          const moveResponse = await axios.get(`https://pokeapi.co/api/v2/move/${selectedMove}`);
+          const learnedByPokemon = moveResponse?.data?.learned_by_pokemon || [];
+          const movePokemonNames = learnedByPokemon.map(pokemon => pokemon.name);
 
-          filteredPokemonList = commonPokemonInGeneration.filter(name => abilityPokemonNames.includes(name));
+          filteredPokemonList = commonPokemonInGeneration.filter(name => movePokemonNames.includes(name));
 
           const pokemonPromises = filteredPokemonList.map(async (name) => {
             try {
@@ -86,15 +87,16 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTri
         
           filteredPokemonList = await Promise.all(pokemonPromises);
           filteredPokemonList = filteredPokemonList.filter(Boolean);
-        }else if (selectedGeneration &&  selectedAbility) {
-          //geração e habilidade
+        }else if (selectedGeneration &&  selectedMove) {
+          //geração e ataque
           const generationResponse = await axios.get(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
           const generationPokemonNames = generationResponse.data.pokemon_species.map((pokemon) => pokemon.name);
         
-          const abilityResponse = await axios.get(`https://pokeapi.co/api/v2/ability/${selectedAbility}`);
-          const abilityPokemonNames = abilityResponse?.data?.pokemon?.map((pokemon) => pokemon.pokemon.name) || [];
+          const moveResponse = await axios.get(`https://pokeapi.co/api/v2/move/${selectedMove}`);
+          const learnedByPokemon = moveResponse?.data?.learned_by_pokemon || [];
+          const movePokemonNames = learnedByPokemon.map(pokemon => pokemon.name);
         
-          filteredPokemonList = abilityPokemonNames.filter(name => generationPokemonNames.includes(name));
+          filteredPokemonList = movePokemonNames.filter(name => generationPokemonNames.includes(name));
         
           const pokemonPromises = filteredPokemonList.map(async (name) => {
             try {
@@ -108,10 +110,11 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTri
         
           filteredPokemonList = await Promise.all(pokemonPromises);
           filteredPokemonList = filteredPokemonList.filter(Boolean);
-        }else if (selectedTypes.length > 0 && selectedAbility) {
-            //tipo de ataque e habilidade
-          const abilityResponse = await axios.get(`https://pokeapi.co/api/v2/ability/${selectedAbility}`);
-          const abilityPokemonNames = abilityResponse?.data?.pokemon?.map((pokemon) => pokemon.pokemon.name) || [];
+        }else if (selectedTypes.length > 0 && selectedMove) {
+            //tipo de ataque e ataque
+          const moveResponse = await axios.get(`https://pokeapi.co/api/v2/move/${selectedMove}`);
+          const learnedByPokemon = moveResponse?.data?.learned_by_pokemon || [];
+          const movePokemonNames = learnedByPokemon.map(pokemon => pokemon.name);
         
           const typePromises = selectedTypes.map(async (type) => {
             try {
@@ -123,9 +126,9 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTri
           });
         
           const typePokemonNames = await Promise.all(typePromises);
-          const commonPokemonNames = typePokemonNames.reduce((a, b) => a.filter(c => abilityPokemonNames.includes(c)));
+          const commonPokemonNames = typePokemonNames.reduce((a, b) => a.filter(c => movePokemonNames.includes(c)));
         
-          filteredPokemonList = commonPokemonNames.filter(name => abilityPokemonNames.includes(name));
+          filteredPokemonList = commonPokemonNames.filter(name => movePokemonNames.includes(name));
         
           const pokemonPromises = filteredPokemonList.map(async (name) => {
             try {
@@ -183,13 +186,18 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTri
 
           filteredPokemonList = await Promise.all(pokemonPromises);
           filteredPokemonList = filteredPokemonList.filter(Boolean);
-        } else if (selectedAbility) {
-          // Filtro por habilidade
+        } else if (selectedMove) {
+          // Filtro por ataque
           try {
-            const abilityResponse = await axios.get(`https://pokeapi.co/api/v2/ability/${selectedAbility}`);
-            const abilityPokemonNames = abilityResponse.data.pokemon.map((pokemon) => pokemon.pokemon.name);
+            console.log('selectedMove', selectedMove);
+            const moveResponse = await axios.get(`https://pokeapi.co/api/v2/move/${selectedMove}`);
+            const learnedByPokemon = moveResponse?.data?.learned_by_pokemon || [];
+            const movePokemonNames = learnedByPokemon.map(pokemon => pokemon.name);
+            
+            console.log (movePokemonNames)
         
-            const pokemonPromises = abilityPokemonNames.map(async (name) => {
+        
+            const pokemonPromises = movePokemonNames.map(async (name) => {
               try {
                 const pokemonSpeciesResponse = await axios.get(`${POKEMON_SPECIES_API_BASE_URL}/${name}`);
                 const pokemonResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemonSpeciesResponse.data.id}`);
@@ -220,11 +228,11 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedAbility, searchTri
   }, [searchTrigger]);
 
   useEffect(() => {
-    if (selectedTypes.length === 0 && !selectedGeneration && !selectedAbility) {
+    if (selectedTypes.length === 0 && !selectedGeneration && !selectedMove) {
       // Se nenhum filtro estiver ativado, retorne para a home
       navigate('/');
     }
-  }, [selectedTypes, selectedGeneration, selectedAbility, navigate]);
+  }, [selectedTypes, selectedGeneration, selectedMove, navigate]);
 
   return (
     <Box className="content" p="1rem" bgColor="#fff" width="100vw" height="100vh" display="flex" flexDirection="column" alignItems="center">

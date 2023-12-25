@@ -11,7 +11,7 @@ import backgroundImage from './image/background.jpg';
 function App() {
   const [selectedGeneration, setSelectedGeneration] = useState(null);
   const [selectedTypes, setSelectedTypes] = useState([]);
-  const [selectedAbility, setSelectedAbility] = useState(null);
+  const [selectedMove, setSelectedMove] = useState(null);
   const [searchTrigger, setSearchTrigger] = useState(false);
 
   const handleSearch = () => {
@@ -36,7 +36,7 @@ function App() {
           <Filter
             onSelectGeneration={(generation) => setSelectedGeneration(generation)}
             onSelectType={(types) => setSelectedTypes(types)}
-            onSelectAbility={(ability) => setSelectedAbility(ability)}
+            onSelectMove={(move) => setSelectedMove(move)}
             onSearch={handleSearch}
           />
           <Routes>
@@ -46,7 +46,7 @@ function App() {
               element={<Pokedex
                           selectedGeneration={selectedGeneration}
                           selectedTypes={selectedTypes}
-                          selectedAbility={selectedAbility}
+                          selectedMove={selectedMove}
                           searchTrigger={searchTrigger}
                           width="100%"
                         />}
