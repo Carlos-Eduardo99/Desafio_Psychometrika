@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 const POKEMON_API_BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
 const POKEMON_SPECIES_API_BASE_URL = 'https://pokeapi.co/api/v2/pokemon-species';
-const LOCATION_API_BASE_URL = 'https://pokeapi.co/api/v2/location';
+const LOCATION_API_BASE_URL = 'https://pokeapi.co/api/v2/location-area';
 
 const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigger }) => {
   const [pokemonList, setPokemonList] = useState([]);
@@ -241,7 +241,7 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
         const uniqueLocationObjects = Array.from(new Set(locationObjects.map(JSON.stringify)), JSON.parse);
         
         setLocations(uniqueLocationObjects);
-        console.log(uniqueLocationObjects);
+       
         
         } catch (error) {
           console.error('Error fetching Pokemon data:', error);
@@ -263,44 +263,35 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
 
   const handleLocationClick = async (location) => {
     try {
-      console.log(location);
-  
       const { name, url } = location;
-
-      console.log(location.url)
-  
-      // Extrai o ID da URL da localidade
       const locationId = url.split('/').filter(Boolean).pop();
   
+      // Obter dados da localização
       const locationResponse = await axios.get(`${LOCATION_API_BASE_URL}/${locationId}`);
-      const pokemonNamesInLocation = locationResponse?.data?.pokemon_encounters?.map(
-        (encounter) => encounter.pokemon.name
-      ) || [];
-      
-      const pokemonPromises = pokemonNamesInLocation.map(async (name) => {
-        
-        try {
-          const pokemonSpeciesResponse = await axios.get(`${POKEMON_SPECIES_API_BASE_URL}/${name}`);
-          const pokemonResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemonSpeciesResponse.data.id}`);
-          
-          return pokemonResponse.data;
-          
-        } catch (error) {
-          return null;
-        }
-      });
+      const locationData = locationResponse?.data || {};
+
+      // Extrair a lista de pokemons encontrados na area
+      const locationAreas = locationData.pokemon_encounters || [];
+
+      // Extrair IDs dos Pokémon na localização
+      const locationPokemonIds = locationAreas.flatMap((encounter) => {
+        const pokemonUrl = encounter.pokemon?.url;
+        console.log('URL do Pokémon:', pokemonUrl);
+
+        const pokemonId = pokemonUrl?.split('/').filter(Boolean).pop();
+        return pokemonId ? parseInt(pokemonId, 10) : null;
+      }).filter(Boolean);
   
-      const pokemonListInLocation = await Promise.all(pokemonPromises);
-      
-      
+      // Filtrar a lista de Pokémon existente usando os IDs dos Pokémon na localização
+      const pokemonListInLocation = pokemonList.filter((pokemon) => locationPokemonIds.includes(pokemon.id));
   
-      // Adiciona os Pokémon da localidade à lista existente
-      setPokemonList((prevList) => [...prevList, ...pokemonListInLocation.filter(Boolean)]);
+      // Adicionar os Pokémon da localidade à lista existente
+      setPokemonList(pokemonListInLocation);
       setSelectedLocation(name);
   
-      console.log('Lista de pokemons:', pokemonListInLocation);
+  
     } catch (error) {
-      console.error('Error fetching location details:', error);
+      console.error('Erro ao buscar detalhes da localização:', error);
     }
   };
 
