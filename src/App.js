@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Navigate, BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ChakraProvider, Box } from '@chakra-ui/react';
-import './App.css';
 import Pokedex from './components/Pokedex';
 import Header from './components/Header';
 import Filter from './components/Filter';
@@ -25,34 +24,42 @@ function App() {
           backgroundImage={`url(${backgroundImage})`}
           backgroundSize="cover"
           backgroundPosition="center"
-          minHeight="100vh"
           display="flex"
           flexDirection="column"
           alignItems="center"
           justifyContent="center"
           width="100%"
+          padding="2rem" 
         >
           <Header width="100%" />
-          <Filter
-            onSelectGeneration={(generation) => setSelectedGeneration(generation)}
-            onSelectType={(types) => setSelectedTypes(types)}
-            onSelectMove={(move) => setSelectedMove(move)}
-            onSearch={handleSearch}
-          />
-          <Routes>
-            <Route path="/" element={<Homepage width="100%" />} />
-            <Route
-              path="/pokedex"
-              element={<Pokedex
-                          selectedGeneration={selectedGeneration}
-                          selectedTypes={selectedTypes}
-                          selectedMove={selectedMove}
-                          searchTrigger={searchTrigger}
-                          width="100%"
-                        />}
+          <Box
+            maxWidth="1200px"
+            width="100%"
+            bgColor="rgba(255, 255, 255, 0.8)"
+            borderRadius="md"
+            padding="2rem"
+            marginTop="2rem"
+          >
+            <Filter
+              onSelectGeneration={(generation) => setSelectedGeneration(generation)}
+              onSelectType={(types) => setSelectedTypes(types)}
+              onSelectMove={(move) => setSelectedMove(move)}
+              onSearch={handleSearch}
             />
-            <Route path="/*" element={<Navigate to="/" />} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={<Homepage />} />
+              <Route
+                path="/pokedex"
+                element={<Pokedex
+                            selectedGeneration={selectedGeneration}
+                            selectedTypes={selectedTypes}
+                            selectedMove={selectedMove}
+                            searchTrigger={searchTrigger}
+                          />}
+              />
+              <Route path="/*" element={<Navigate to="/" />} />
+            </Routes>
+          </Box>
         </Box>
       </Router>
     </ChakraProvider>

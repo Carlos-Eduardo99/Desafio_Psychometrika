@@ -11,7 +11,7 @@ const GenerationFilter = ({ onSelectGeneration }) => {
         const response = await axios.get('https://pokeapi.co/api/v2/generation/');
         const genData = response.data.results.map((gen) => ({
           value: gen.url.split('/').reverse()[1],
-          label: gen.name.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()), // Capitaliza as palavras
+          label: gen.name.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         }));
         setGenerations(genData);
       } catch (error) {

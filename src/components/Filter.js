@@ -20,7 +20,7 @@ const Filter = ({ onSelectGeneration, onSelectType, onSelectMove, onSearch, load
 
   return (
     <Box
-      maxW="1000px"
+      maxW="1500px"
       mx="auto"
       mt={4}
       p={4}
@@ -33,17 +33,19 @@ const Filter = ({ onSelectGeneration, onSelectType, onSelectMove, onSearch, load
       <Text fontSize="xl" fontWeight="bold" mb={4} textAlign="center">
         Filtros
       </Text>
-      <Flex direction={{ base: 'column', md: 'row' }} align={{ base: 'stretch', md: 'center' }}>
+      <Flex direction={{ base: 'column', md: 'row' }} align={{ base: 'stretch', md: 'center' }} minH={'300px'}>
         <Box flex={{ base: '1', md: '2' }} mb={{ base: '4', md: '0' }}>
           <TypeFilter onSelectType={handleTypeSelect} />
         </Box>
-        <Box ml={{ base: '0', md: '4' }}>
+        <Box ml={{ base: '0', md: '4' }} gap={'100px'}>
           <GenerationFilter onSelectGeneration={onSelectGeneration} />
           <MoveFilter onSelectMove={onSelectMove} />
+          <Flex justifyContent={'flex-end'} > 
+          <Button onClick={handleSearch} colorScheme="teal" mt={4} disabled={loading}>
+            {loading ? <Spinner size="sm" color="white" /> : 'Aplicar Filtro'}
+          </Button>
+        </Flex>
         </Box>
-        <Button onClick={handleSearch} colorScheme="teal" mt={4} disabled={loading}>
-          {loading ? <Spinner size="sm" color="white" /> : 'Aplicar Filtro'}
-        </Button>
       </Flex>
     </Box>
   );

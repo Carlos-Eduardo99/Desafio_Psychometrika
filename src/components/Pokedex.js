@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Grid, Text, Button } from '@chakra-ui/react';
+import { Box, Grid, Text, Button, Flex } from '@chakra-ui/react';
 import PokemonCard from './PokemonCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -193,13 +193,9 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
         } else if (selectedMove) {
           // Filtro por ataque
           try {
-            console.log('selectedMove', selectedMove);
             const moveResponse = await axios.get(`https://pokeapi.co/api/v2/move/${selectedMove}`);
             const learnedByPokemon = moveResponse?.data?.learned_by_pokemon || [];
             const movePokemonNames = learnedByPokemon.map(pokemon => pokemon.name);
-            
-            console.log (movePokemonNames)
-        
         
             const pokemonPromises = movePokemonNames.map(async (name) => {
               try {
@@ -226,7 +222,6 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
             const locationResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemon.id}/encounters`);
             const locationAreas = locationResponse?.data?.map((location) => location.location_area) || [];
         
-            // Modifica o array de objetos { name, url } antes de retorná-lo
             return locationAreas.map((area) => ({ name: area.name, url: area.url }));
           } catch (error) {
             console.error('Error fetching location data:', error);
@@ -276,7 +271,6 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
       // Extrair IDs dos Pokémon na localização
       const locationPokemonIds = locationAreas.flatMap((encounter) => {
         const pokemonUrl = encounter.pokemon?.url;
-        console.log('URL do Pokémon:', pokemonUrl);
 
         const pokemonId = pokemonUrl?.split('/').filter(Boolean).pop();
         return pokemonId ? parseInt(pokemonId, 10) : null;
@@ -284,6 +278,7 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
   
       // Filtrar a lista de Pokémon existente usando os IDs dos Pokémon na localização
       const pokemonListInLocation = pokemonList.filter((pokemon) => locationPokemonIds.includes(pokemon.id));
+
   
       // Adicionar os Pokémon da localidade à lista existente
       setPokemonList(pokemonListInLocation);
@@ -301,50 +296,75 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
   };
 
   return (
-    <Box className="content" p="1rem" bgColor="#fff" width="100vw" height="100vh" display="flex" flexDirection="column" alignItems="center">
-      {loadingData ? (
-        <Text mt={4} fontSize="xl" fontWeight="bold">
-          Carregando dados...
-        </Text>
-      ) : selectedLocation ? (
-        <>
-          <Grid templateColumns={`repeat(4, 1fr)`} gap={4}>
-            {pokemonList.map((pokemon) => (
-              <PokemonCard
-                key={pokemon.id}
-                number={pokemon.id}
-                name={pokemon.name}
-                pokeDetails={pokemon}
-                image={pokemon.sprites.front_default}
-              />
-            ))}
-          </Grid>
-          <Button onClick={handleBackButtonClick} mt={4}>
-            Voltar para a lista de localidades
-          </Button>
-        </>
-      ) : locations.length > 0 ? (
-        <Grid templateColumns={`repeat(${Math.min(locations.length, 4)}, 1fr)`} gap={4}>
-          {locations.map((location) => (
-            <Box
-              key={location.url}
-              p={4}
-              bgColor="gray.200"
-              borderRadius="md"
-              textAlign="center"
-              _hover={{ bgColor: 'teal.200', cursor: 'pointer', transform: 'scale(1.05)' }}
-              onClick={() => handleLocationClick(location)}
-            >
-              <Text mb={2}>{location.name}</Text>
-            </Box>
-          ))}
-        </Grid>
-      ) : (
-        <Text mt={4} fontSize="xl" fontWeight="bold" color="red.500">
-          Nenhum Pokémon corresponde à sua pesquisa!
-        </Text>
-      )}
-    </Box>
+    <Flex
+      direction="column"
+      alignItems="center"
+      
+      minHeight="100vh"
+      padding="1rem"
+      bgColor="#f5f5f5"
+    >
+      <Box
+        maxWidth="1200px"
+        width="100%"
+        bgColor="#ffffff"
+        borderRadius="md"
+        padding="2rem"
+        marginTop="2rem"
+        boxShadow="md"
+      >
+        {loadingData ? (
+          <Text mt={4} fontSize="xl" fontWeight="bold" color="teal.600">
+            Carregando dados...
+          </Text>
+        ) : selectedLocation ? (
+          <>
+            <Text mt={2} fontSize="2xl" fontWeight="bold" color="teal.600" padding={"1rem"}>
+              {`Pokémons encontrados em ${selectedLocation}`}
+            </Text>
+            <Grid templateColumns={`repeat(4, 1fr)`} gap={4} flexWrap={'wrap'}>
+              {pokemonList.map((pokemon) => (
+                <PokemonCard
+                  key={pokemon.id}
+                  number={pokemon.id}
+                  name={pokemon.name}
+                  pokeDetails={pokemon}
+                  image={pokemon.sprites.front_default}
+                />
+              ))}
+            </Grid>
+            <Button onClick={handleBackButtonClick} mt={4} colorScheme="teal">
+              Voltar para a lista de localidades
+            </Button>
+          </>
+        ) : locations.length > 0 ? (
+          <>
+            <Text mt={2} fontSize="2xl" fontWeight="bold" color="teal.600" padding={"1rem"}>
+              Escolha uma localização
+            </Text>
+            <Grid templateColumns={`repeat(${Math.min(locations.length, 4)}, 1fr)`} gap={4}>
+              {locations.map((location) => (
+                <Box
+                  key={location.url}
+                  p={4}
+                  bgColor="gray.200"
+                  borderRadius="md"
+                  textAlign="center"
+                  _hover={{ bgColor: 'teal.200', cursor: 'pointer', transform: 'scale(1.05)' }}
+                  onClick={() => handleLocationClick(location)}
+                >
+                  <Text mb={2}>{location.name}</Text>
+                </Box>
+              ))}
+            </Grid>
+          </>
+        ) : (
+          <Text mt={4} fontSize="xl" fontWeight="bold" color="red.500">
+            Nenhum Pokémon corresponde à sua pesquisa!
+          </Text>
+        )}
+      </Box>
+    </Flex>
   );
 };
 

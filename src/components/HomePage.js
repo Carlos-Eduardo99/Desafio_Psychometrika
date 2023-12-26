@@ -49,8 +49,16 @@ const Homepage = () => {
   }, [pageCount]);
 
   return (
-    <Box className="content" p="1rem" bgColor="#fff" width="100vw" height="100vh" display="flex" flexDirection="column" alignItems="center">
-      <Grid templateColumns={`repeat(4, 1fr)`} gap={4}>
+    <Box
+      maxWidth="1200px"
+      width="100%"
+      bgColor="#ffffff"
+      borderRadius="md"
+      padding="2rem"
+      marginTop="2rem"
+      boxShadow="md"
+    >
+      <Grid templateColumns={`repeat(4, 1fr)`} gap={4} marginBottom="2rem">
         {pokemonList.map((pokemon) => (
           <PokemonCard
             key={pokemon.id}
@@ -68,6 +76,7 @@ const Homepage = () => {
       )}
     </Box>
   );
+  
 };
 
 export default Homepage;
