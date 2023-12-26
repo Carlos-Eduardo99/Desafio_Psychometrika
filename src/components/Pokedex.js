@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Grid, Text } from '@chakra-ui/react';
+import { Box, Grid, Text, Button } from '@chakra-ui/react';
 import PokemonCard from './PokemonCard';
 import { useNavigate } from 'react-router-dom';
 
 const POKEMON_API_BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
 const POKEMON_SPECIES_API_BASE_URL = 'https://pokeapi.co/api/v2/pokemon-species';
+const LOCATION_API_BASE_URL = 'https://pokeapi.co/api/v2/location';
 
 const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigger }) => {
   const [pokemonList, setPokemonList] = useState([]);
-  const navigate = useNavigate();
+  const [locations, setLocations] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const applyFilter = async () => {
+
       try {
         setLoadingData(true);
         let filteredPokemonList = [];
@@ -136,7 +140,7 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
               const pokemonResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemonSpeciesResponse.data.id}`);
               return pokemonResponse.data;
             } catch (error) {
-              // Ignorar Pokémon não encontrado
+
               return null;
             }
           });
@@ -203,7 +207,6 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
                 const pokemonResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemonSpeciesResponse.data.id}`);
                 return pokemonResponse.data;
               } catch (error) {
-                // Ignorar Pokémon não encontrado
                 return null;
               }
             });
@@ -216,11 +219,35 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
         }
 
         setPokemonList(filteredPokemonList.sort((a, b) => a.id - b.id)); // ordena em ordem crescente
-      } catch (error) {
-        console.error('Error fetching Pokemon data:', error);
-      }finally {
-        setLoadingData(false);
-      }
+        
+        // Retorna as localizações dos pokemons do filtro
+        const locationPromises = filteredPokemonList.map(async (pokemon) => {
+          try {
+            const locationResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemon.id}/encounters`);
+            const locationAreas = locationResponse?.data?.map((location) => location.location_area) || [];
+        
+            // Modifica o array de objetos { name, url } antes de retorná-lo
+            return locationAreas.map((area) => ({ name: area.name, url: area.url }));
+          } catch (error) {
+            console.error('Error fetching location data:', error);
+            return [];
+          }
+        });
+        
+        const locationData = await Promise.all(locationPromises);
+        
+        const locationObjects = locationData.flat();
+        
+        const uniqueLocationObjects = Array.from(new Set(locationObjects.map(JSON.stringify)), JSON.parse);
+        
+        setLocations(uniqueLocationObjects);
+        console.log(uniqueLocationObjects);
+        
+        } catch (error) {
+          console.error('Error fetching Pokemon data:', error);
+        } finally {
+          setLoadingData(false);
+        }
     };
 
     applyFilter();
@@ -234,22 +261,91 @@ const Pokedex = ({ selectedGeneration, selectedTypes, selectedMove, searchTrigge
     }
   }, [selectedTypes, selectedGeneration, selectedMove, navigate]);
 
+  const handleLocationClick = async (location) => {
+    try {
+      console.log(location);
+  
+      const { name, url } = location;
+
+      console.log(location.url)
+  
+      // Extrai o ID da URL da localidade
+      const locationId = url.split('/').filter(Boolean).pop();
+  
+      const locationResponse = await axios.get(`${LOCATION_API_BASE_URL}/${locationId}`);
+      const pokemonNamesInLocation = locationResponse?.data?.pokemon_encounters?.map(
+        (encounter) => encounter.pokemon.name
+      ) || [];
+      
+      const pokemonPromises = pokemonNamesInLocation.map(async (name) => {
+        
+        try {
+          const pokemonSpeciesResponse = await axios.get(`${POKEMON_SPECIES_API_BASE_URL}/${name}`);
+          const pokemonResponse = await axios.get(`${POKEMON_API_BASE_URL}/${pokemonSpeciesResponse.data.id}`);
+          
+          return pokemonResponse.data;
+          
+        } catch (error) {
+          return null;
+        }
+      });
+  
+      const pokemonListInLocation = await Promise.all(pokemonPromises);
+      
+      
+  
+      // Adiciona os Pokémon da localidade à lista existente
+      setPokemonList((prevList) => [...prevList, ...pokemonListInLocation.filter(Boolean)]);
+      setSelectedLocation(name);
+  
+      console.log('Lista de pokemons:', pokemonListInLocation);
+    } catch (error) {
+      console.error('Error fetching location details:', error);
+    }
+  };
+
+  const handleBackButtonClick = () => {
+    setPokemonList([]);
+    setSelectedLocation(null);
+  };
+
   return (
     <Box className="content" p="1rem" bgColor="#fff" width="100vw" height="100vh" display="flex" flexDirection="column" alignItems="center">
       {loadingData ? (
         <Text mt={4} fontSize="xl" fontWeight="bold">
           Carregando dados...
         </Text>
-      ) : pokemonList.length > 0 ? (
-        <Grid templateColumns={`repeat(4, 1fr)`} gap={4}>
-          {pokemonList.map((pokemon) => (
-            <PokemonCard
-              key={pokemon.id}
-              number={pokemon.id}
-              name={pokemon.name}
-              pokeDetails={pokemon}
-              image={pokemon.sprites.front_default}
-            />
+      ) : selectedLocation ? (
+        <>
+          <Grid templateColumns={`repeat(4, 1fr)`} gap={4}>
+            {pokemonList.map((pokemon) => (
+              <PokemonCard
+                key={pokemon.id}
+                number={pokemon.id}
+                name={pokemon.name}
+                pokeDetails={pokemon}
+                image={pokemon.sprites.front_default}
+              />
+            ))}
+          </Grid>
+          <Button onClick={handleBackButtonClick} mt={4}>
+            Voltar para a lista de localidades
+          </Button>
+        </>
+      ) : locations.length > 0 ? (
+        <Grid templateColumns={`repeat(${Math.min(locations.length, 4)}, 1fr)`} gap={4}>
+          {locations.map((location) => (
+            <Box
+              key={location.url}
+              p={4}
+              bgColor="gray.200"
+              borderRadius="md"
+              textAlign="center"
+              _hover={{ bgColor: 'teal.200', cursor: 'pointer', transform: 'scale(1.05)' }}
+              onClick={() => handleLocationClick(location)}
+            >
+              <Text mb={2}>{location.name}</Text>
+            </Box>
           ))}
         </Grid>
       ) : (
